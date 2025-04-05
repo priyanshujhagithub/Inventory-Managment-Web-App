@@ -1,19 +1,45 @@
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import http from 'http';
+import { Server } from 'socket.io';
+import authRoutes from './routes/auth.js';
+import productRoutes from './routes/products.js';
 
+dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
-app.use(express.json());
+// Create HTTP server and setup Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: '*' } });
 
-app.get('/',(req,res)=>{
-    res.json({message: 'Hello from the backend !'});
+// Optional: Setup Socket.IO events here
+io.on('connection', (socket) => {
+    console.log('A client connected:', socket.id);
+    socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+    });
 });
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../my-vite-app/dist/index.html'));
+app.set('io',io);
+app.use('',productRoutes);
+
+// Middleware
+app.use(express.json());
+app.use(cors());
+
+// Routes
+app.use('', authRoutes);
+app.use('', productRoutes);
+
+// Start server with Socket.IO support
+server.listen(PORT, () => {
+    console.log(`Backend running on http://localhost:${PORT}`);
 });
