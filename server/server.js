@@ -16,6 +16,10 @@ mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopol
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 
+// Middleware
+app.use(cors());
+app.use(express.json());
+
 // Create HTTP server and setup Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
@@ -28,16 +32,12 @@ io.on('connection', (socket) => {
     });
 });
 
+// Make io available in routes via app.set/get
 app.set('io',io);
-app.use('',productRoutes);
 
-// Middleware
-app.use(express.json());
-app.use(cors());
-
-// Routes
-app.use('', authRoutes);
-app.use('', productRoutes);
+// 6) Mount routes under /api
+app.use('/api', authRoutes);     // handles /api/signup, /api/signin
+app.use('/api', productRoutes);  // handles /api/products, /api/update-product
 
 // Start server with Socket.IO support
 server.listen(PORT, () => {
