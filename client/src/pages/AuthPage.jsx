@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import SignIn from '../components/Auth/SignIn';
-import SignUp from '../components/auth/SignUp';
+import SignUp from '../components/Auth/SignUp';
 
 export default function AuthPage({ onAuthenticated }) {
   const [tab, setTab] = useState('signIn');
