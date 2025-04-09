@@ -4,12 +4,18 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      },
+    host: '0.0.0.0'  // enables dev server access from outside
+  },
+  preview: {
+    host: '0.0.0.0',  // required for Railway to access preview server
+    port: parseInt(process.env.PORT) || 4173
+  },
+  build: {
+    outDir: 'dist'
+  },
+  resolve: {
+    alias: {
+      '@': '/src',
     },
   },
-});
+})
