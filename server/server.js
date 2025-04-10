@@ -35,6 +35,10 @@ io.on('connection', (socket) => {
 // Make io available in routes via app.set/get
 app.set('io',io);
 
+app.get('/', (req, res) => {
+    res.send('Welcome to the Inventory Management API');
+});
+
 // 6) Mount routes under /api
 app.use('/api', authRoutes);     // handles /api/signup, /api/signin
 app.use('/api', productRoutes);  // handles /api/products, /api/update-product
