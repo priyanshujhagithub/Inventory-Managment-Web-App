@@ -1,3 +1,4 @@
+// routes/products.js
 import express from 'express';
 import Product from '../models/Product.js';
 import jwt from 'jsonwebtoken';
@@ -9,51 +10,70 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middleware to protect routes
 const authenticate = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token)
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
     return res.status(403).json({ message: 'No token provided' });
-    try {
+  }
+  try {
     req.user = jwt.verify(token, JWT_SECRET);
     next();
-    } catch (error) {
+  } catch (error) {
     res.status(401).json({ message: 'Unauthorized' });
-    }
+  }
 };
 
 // Get all products (protected route)
 router.get('/products', authenticate, async (req, res) => {
-    try {
+  try {
     const products = await Product.find();
     res.json(products);
-    } catch (error) {
+  } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ message: 'Server error fetching products' });
-    }
+  }
 });
 
 // Endpoint to update product sensor data (for simulation)
 router.post('/update-product', async (req, res) => {
-    const { id, weight, quantity, temperature, humidity } = req.body;
-    try {
+  const { id, weight, quantity, temperature, humidity } = req.body;
+  try {
     const product = await Product.findById(id);
-    if (!product)
-        return res.status(404).json({ message: 'Product not found' });
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
 
-    product.weight = weight;
-    product.quantity = quantity;
+    // Update fields
+    product.weight      = weight;
+    product.quantity    = quantity;
     product.temperature = temperature;
-    product.humidity = humidity;
+    product.humidity    = humidity;
     await product.save();
 
-    if(quantity<10){
-        io.emit('low-stock',{id,message:`${product.name} stock is low!`});
+    // Get the Socket.IO instance
+    const io = req.app.get('io');
+
+    // 1) Emit the product-update event for real‑time table patching
+    io.emit('product-update', {
+      id:          product._id,
+      weight:      product.weight,
+      quantity:    product.quantity,
+      temperature: product.temperature,
+      humidity:    product.humidity
+    });
+
+    // 2) Emit a low-stock notification if needed
+    if (product.quantity < 10) {
+      io.emit('low-stock', {
+        id:      product._id,
+        message: `${product.name} stock is low!`
+      });
     }
 
     res.json({ message: 'Product updated successfully', product });
-    } catch (error) {
+  } catch (error) {
     console.error('Error updating product:', error);
     res.status(500).json({ message: 'Server error updating product' });
-    }
+  }
 });
 
 export default router;

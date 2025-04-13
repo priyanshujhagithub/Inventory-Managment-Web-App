@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
     .catch(err => console.error('MongoDB connection error:', err));
 
 // Middleware
-app.use(cors({origin:'https://inventory-managment-web-r1ubshfin.vercel.app'}));
+app.use(cors({origin:'*'}));
 app.use(express.json());
 
 // Create HTTP server and setup Socket.IO
@@ -44,6 +44,6 @@ app.use('/api', authRoutes);     // handles /api/signup, /api/signin
 app.use('/api', productRoutes);  // handles /api/products, /api/update-product
 
 // Start server with Socket.IO support
-server.listen(PORT, () => {
-    console.log(`Backend running on http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0' ,() => {
+    console.log(`Backend running on http://0.0.0.0:${PORT}`);
 });
