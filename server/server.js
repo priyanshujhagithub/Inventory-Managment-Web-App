@@ -45,5 +45,5 @@ app.use('/api', productRoutes);  // handles /api/products, /api/update-product
 
 // Start server with Socket.IO support
 server.listen(PORT, '0.0.0.0' ,() => {
-    console.log(`Backend running on http://0.0.0.0:${PORT}`);
+    console.log(`Backend running on https://0.0.0.0:${PORT}`);
 });

@@ -30,6 +30,6 @@ export const getProducts = async (token) => {
         // log the error body so you can see why it failed
         console.error('getProducts failed:', await response.text());
         return [];
-      }
+    }
     return response.json();
 };
