@@ -3,9 +3,8 @@ import useSocket from '../hooks/useSocket';
 import ProductList from '../components/Dashboard/ProductList';
 import Logo from '../components/Logo';
 
-
 export default function DashboardPage({ onLogout, mode, toggleMode }) {
-  const { notification } = useSocket();
+  const { notification, clearNotification } = useSocket();
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-800">
@@ -28,13 +27,25 @@ export default function DashboardPage({ onLogout, mode, toggleMode }) {
           </button>
         </div>
       </header>
+
       <main className="p-6">
-        <Logo/>
+        <Logo />
+
+        {/* Low‑stock alert with manual close */}
         {notification && (
-          <div className="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+          <div className="relative mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
+            {/* Close button */}
+            <button
+              onClick={clearNotification}
+              className="absolute top-2 right-2 text-yellow-700 hover:text-yellow-900"
+              aria-label="Close alert"
+            >
+              ✕
+            </button>
             {notification.message}
           </div>
         )}
+
         <ProductList />
       </main>
     </div>

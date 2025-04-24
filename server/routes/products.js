@@ -1,8 +1,8 @@
-// routes/products.js
 import express from 'express';
 import Product from '../models/Product.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { updateProductData } from './productService.js';
 
 dotenv.config();
 const router = express.Router();
@@ -35,44 +35,13 @@ router.get('/products', authenticate, async (req, res) => {
 
 // Endpoint to update product sensor data (for simulation)
 router.post('/update-product', async (req, res) => {
-  const { id, weight, quantity, temperature, humidity } = req.body;
   try {
-    const product = await Product.findById(id);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    // Update fields
-    product.weight      = weight;
-    product.quantity    = quantity;
-    product.temperature = temperature;
-    product.humidity    = humidity;
-    await product.save();
-
-    // Get the Socket.IO instance
     const io = req.app.get('io');
-
-    // 1) Emit the product-update event for real‑time table patching
-    io.emit('product-update', {
-      id:          product._id,
-      weight:      product.weight,
-      quantity:    product.quantity,
-      temperature: product.temperature,
-      humidity:    product.humidity
-    });
-
-    // 2) Emit a low-stock notification if needed
-    if (product.quantity < 10) {
-      io.emit('low-stock', {
-        id:      product._id,
-        message: `${product.name} stock is low!`
-      });
-    }
-
+    const product = await updateProductData(io, req.body);
     res.json({ message: 'Product updated successfully', product });
   } catch (error) {
-    console.error('Error updating product:', error);
-    res.status(500).json({ message: 'Server error updating product' });
+    console.error('❌ [update-product] Error:', error.message);
+    res.status(error.message === 'Product not found' ? 404 : 500).json({ message: error.message });
   }
 });
 

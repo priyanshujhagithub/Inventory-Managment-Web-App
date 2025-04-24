@@ -1,4 +1,3 @@
-// POST /api/update-product
 router.post('/update-product', async (req, res) => {
     const { id, weight, quantity, temperature, humidity } = req.body;
     

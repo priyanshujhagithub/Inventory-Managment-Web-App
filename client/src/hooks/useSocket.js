@@ -28,7 +28,15 @@ const useSocket = () => {
     };
   }, []);
 
-  return { notification, liveData };
+  useEffect(() => {
+    if (!notification) return;
+    const timer = setTimeout(() => setNotification(null), 5000);
+    return () => clearTimeout(timer);
+  }, [notification]);
+
+  const clearNotification = ()=>setNotification(null);
+
+  return { notification, liveData ,clearNotification};
 };
 
 export default useSocket;
